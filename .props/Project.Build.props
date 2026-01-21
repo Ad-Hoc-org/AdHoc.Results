@@ -1,0 +1,59 @@
+<Project>
+
+  <PropertyGroup>
+    <PackageTags>AdHoc</PackageTags>
+    <PackageIcon>icon.png</PackageIcon>
+    <Authors>AdHoc Authors</Authors>
+    <Company>AdHoc</Company>
+    <Copyright>Copyright AdHoc Authors</Copyright>
+  </PropertyGroup>
+
+  <!-- Enable Deterministic Builds for github actions -->
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Repository">
+    <RepositoryType>git</RepositoryType>
+    <!-- RepositoryUrl will be set by SourceLink -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+  </PropertyGroup>
+  <!-- Enable sourcelink https://docs.microsoft.com/dotnet/standard/library-guidance/sourcelink -->
+  <ItemGroup Label="Repository">
+    <PackageReference Include="Microsoft.SourceLink.GitHub">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <PropertyGroup Label="Package">
+    <PackageOutputPath>$(RepoRoot)nupkgs/</PackageOutputPath>
+
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackagePrimaryLicenseFile>LICENSE</PackagePrimaryLicenseFile>
+    <PackageThirdPartyNoticesFile>THIRD-PARTY-NOTICES</PackageThirdPartyNoticesFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
+    <DebugType>full</DebugType>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)))sign.snk</AssemblyOriginatorKeyFile>
+    <PublicKey>0024000004800000940000000602000000240000525341310004000001000100ad1d246ae9ba32c9f80a97f7cddcb47e371aba949d4d7dd930bd1f1116ea65136a0dc3edf1369599f50e3bb3704f2405a78d9e4053840ab43dfdd8a12d818fdc50d4f4e5347cf1e7fdc46a33513aac96cdd59869a80e81ba6c37ba6e564a426641d8a8fb2fd5dc4ab2475ad68ba1f3eabd9841ccc37d1206a1ac2e5b436edeb8</PublicKey>
+    <PublicKey Condition="'$(ContinuousIntegrationBuild)' == 'true' AND '$(_IsPacking)' == 'true'">0024000004800000940000000602000000240000525341310004000001000100552ad20d549cb62021018078153d94c03d10e7b3fcf166778ccb71e2ae1bafe1d0afdd3f81c9884834c8b95f7a08c4578e5bd5811fa6ef7fe9db1ac1c8518c4453c3f41ec7ff05a119b556bb21fa9836d415a05912f5695bdc4e2676d5ae34ac82c7322d8065a7e78952ef5189dcb14118485c9500f0cb292e440f69121c28a8</PublicKey>
+  </PropertyGroup>
+  <ItemGroup Label="Package">
+    <None Include="$(RepoRoot)LICENSE" Pack="true" PackagePath="/" Visible="false" />
+    <None Include="$(RepoRoot)THIRD-PARTY-NOTICES" Pack="true" PackagePath="/" Visible="false" />
+
+    <None Include="$(RepoRoot).props/icon.png" Condition="!Exists('icon.png')" Pack="true" PackagePath="/" Visible="false" />
+    <None Include="icon.png" Condition="Exists('icon.png')" Pack="true" PackagePath="/" />
+
+    <None Include="$(RepoRoot)README.md" Condition="!Exists('README.md')" Pack="true" PackagePath="/" Visible="false" />
+    <None Include="README.md" Condition="Exists('README.md')" Pack="true" PackagePath="/" />
+  </ItemGroup>
+  
+</Project>

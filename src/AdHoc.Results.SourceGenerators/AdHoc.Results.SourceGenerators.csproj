@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks></TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <IsAotCompatible>false</IsAotCompatible>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="AdHoc.Results.SourceGenerators.Constants" Static="true" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddGeneratorsToOutput</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+  <Target Name="_AddGeneratorsToOutput" BeforeTargets="GenerateNuspec">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(OutputPath)/$(AssemblyName).dll" PackagePath="analyzers/dotnet/cs" />
+    </ItemGroup>
+  </Target>
+</Project>

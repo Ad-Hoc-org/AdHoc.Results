@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <VersionTags>aspnet;http;trace;</VersionTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <VersionTags Include="trace" />
+    <VersionTags Include="http" />
+    <VersionTags Include="http-trace" />
+    <VersionTags Include="aspnet-http" />
+    <VersionTags Include="aspnet-http-trace" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="**/*.HTTP.cs">
+      <DependentUpon>$([System.String]::Copy('%(Filename)').Replace('.HTTP','')).cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AdHoc.Build.VersionTags" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(VersionTags.Contains('aspnet'))">
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <Using Include="Microsoft.AspNetCore.Http.IResult" Alias="IHttpResult" />
+    <Using Include="Microsoft.AspNetCore.Http.Results" Alias="HttpResults" />
+    <Using Include="Microsoft.AspNetCore.Http.Json.JsonOptions" Alias="HttpJsonOptions" />
+    <!--<InternalsVisibleTo Include="AdHoc.Results.AspNetCore" Key="$(PublicKey)" />-->
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../AdHoc.Results.Generators/AdHoc.Results.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <ProjectReference Include="../AdHoc.Results.SourceGenerators/AdHoc.Results.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../AdHoc.Results.Analyzers/AdHoc.Results.Analyzers.csproj" PrivateAssets="all" />
+  </ItemGroup>
+  <PropertyGroup>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddAnalyzersToOutput</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+  <Target Name="_AddAnalyzersToOutput">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(OutputPath)/AdHoc.Results.Analyzers.dll" PackagePath="analyzers/dotnet/cs" />
+    </ItemGroup>
+  </Target>
+</Project>

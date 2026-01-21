@@ -1,0 +1,37 @@
+<Solution>
+  <Folder Name="/.Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path="CODE-OF-CONDUCT.md" />
+    <File Path="CONTRIBUTING.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="LICENSE" />
+    <File Path="NuGet.config" />
+    <File Path="README.md" />
+    <File Path="THIRD-PARTY-NOTICES" />
+  </Folder>
+  <Folder Name="/.Solution Items/.props/">
+    <File Path=".props/Build.props" />
+    <File Path=".props/Build.targets" />
+    <File Path=".props/icon.png" />
+    <File Path=".props/Project.Build.props" />
+    <File Path=".props/Project.Packages.props" />
+    <File Path=".props/sign.snk" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/Samples.ConsoleApp/Samples.ConsoleApp.csproj" Id="f654f46e-56b6-4fc4-a36e-be198f4f976a" />
+    <Project Path="samples/Samples.WebApplication/Samples.WebApplication.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/AdHoc.Results.Analyzers.Tests/AdHoc.Results.Analyzers.Tests.csproj" Id="c3552777-5876-4036-8733-00bd946306b1" />
+  </Folder>
+  <Project Path="src/AdHoc.Results.Abstractions/AdHoc.Results.Abstractions.csproj" Id="ca5612ac-bb00-4d97-b071-35258cdfe199" />
+  <Project Path="src/AdHoc.Results.Analyzers/AdHoc.Results.Analyzers.csproj" Id="2b1ff38a-ecc6-4bd5-aa6d-eb081835cac6" />
+  <Project Path="src/AdHoc.Results.Generators/AdHoc.Results.Generators.csproj" />
+  <Project Path="src/AdHoc.Results.SourceGenerators/AdHoc.Results.SourceGenerators.csproj" Id="8a30b207-9320-4890-bb90-bb9d22316a03" />
+  <Project Path="src/AdHoc.Results/AdHoc.Results.csproj" />
+</Solution>

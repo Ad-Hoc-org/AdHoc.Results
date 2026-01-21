@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <IsAotCompatible>false</IsAotCompatible>
+    <NoWarn>$(NoWarn);NU5104</NoWarn>
+    <IsPackable>true</IsPackable>
+
+    <!--<PublishAot>true</PublishAot>
+		<PublishTrimmed>true</PublishTrimmed>
+		<TrimMode>full</TrimMode>
+		<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+		<EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+		<SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+		<IlcOptimizationPreference>Speed</IlcOptimizationPreference>
+		<IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>-->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="AdHoc.Results.Abstractions" />
+    <Using Include="AdHoc.Results" />
+    <Using Include="AdHoc.Results.Result" Static="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/AdHoc.Results/AdHoc.Results.csproj" />
+  </ItemGroup>
+
+  <Target Name="ResolvePackages" BeforeTargets="Restore;CollectPackageReferences">
+    <PropertyGroup>
+      <_UsePackage>false</_UsePackage>
+      <_UsePackage Condition="'$(Configuration)' != 'Debug' OR '$(_IsPacking)' == 'true'">true</_UsePackage>
+    </PropertyGroup>
+    <Exec Condition="$(_UsePackage) AND !Exists('$(PackageOutputPath)AdHoc.Results.Abstractions.$(Version).3-aspnet-http-trace.nupkg')" Command="dotnet pack &quot;$(MSBuildThisFileDirectory)../AdHoc.Results.Abstractions/AdHoc.Results.Abstractions.csproj&quot;" ContinueOnError="true" />
+    <ItemGroup Condition="$(_UsePackage)">
+      <PackageReference Include="AdHoc.Results.Abstractions" VersionOverride="$(Version).3-aspnet-http-trace" />
+    </ItemGroup>
+  </Target>
+  
+  <Target Name="DefineAOTConstants" BeforeTargets="BeforeCompile">
+    <PropertyGroup Condition="'$(PublishAot)' == 'true'">
+      <DefineConstants>$(DefineConstants);AOT</DefineConstants>
+    </PropertyGroup>
+  </Target>
+</Project>
