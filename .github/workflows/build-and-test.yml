@@ -1,6 +1,6 @@
 name: Build and test .NET projects
 
-on: 
+on:
   push:
     branches:
       - develop
@@ -11,24 +11,20 @@ on:
       - releases/*
     tags:
       - releases/*
-    
+
   pull_request:
-    branches: 
-    - develop
+    branches:
+      - develop
 
 jobs:
-  build:
-    name: Build ${{ matrix.display-name }}
+  build_and_test:
+    name: Build & Test - ${{ matrix.configuration }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        configuration: ['Debug', 'Release']
-        include:
-        - configuration: 'Debug'
-          display-name: 'Debug'
-        - configuration: 'Release'
-          display-name: 'Release'
+        configuration: [Debug, Release]
+        framework: [net10.0]
     steps:
       - uses: actions/checkout@v1
 
@@ -40,37 +36,7 @@ jobs:
       - name: Build
         run: dotnet build -c ${{ matrix.configuration }} /p:BuildInParallel=false
 
-  test:
-    name: Test ${{ matrix.configuration-name }} - ${{ matrix.framework }}
-    needs: build
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        configuration: ['Debug', 'Release']
-        dotnet-version: ['10.0']
-        include:
-        - dotnet-version: '10.0'
-          framework: 'net10.0'
-          install-version: '10.0.x'
-        - configuration: 'Debug'
-          configuration-name: 'Debug'
-        - configuration: 'Release'
-          configuration-name: 'Release'
-    steps:
-    - uses: actions/checkout@v1
-    
-    - name: Setup ${{ matrix.framework }}
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ matrix.install-version }}
-    - name: Setup .net10.0
-      uses: actions/setup-dotnet@v4
-      if: ${{ matrix.install-version != '10.0.x' }}
-      with:
-        dotnet-version: 10.0.x
-
-    - name: Test
-      id: tests
-      run: |
-        dotnet test -f ${{ matrix.framework }} -c ${{ matrix.configuration }} /p:BuildInParallel=false
+      - name: Test
+        id: tests
+        run: |
+          dotnet test -c ${{ matrix.configuration }} --no-build --no-restore /p:BuildInParallel=false
