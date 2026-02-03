@@ -1,3 +1,5 @@
+<img src="./.props/icon.png" alt="Logo" width="128" height="128" style="float:right;"/>
+
 # AdHoc.Results
 
 A modern, type-safe Result pattern implementation for .NET that eliminates exceptions as control flow and provides compile-time guarantees for error handling.
