@@ -1,4 +1,4 @@
-<img src="./.props/icon.png" alt="Logo" width="128" height="128" style="float:right;"/>
+<img src="./.props/icon.png" alt="Logo" width="128" height="128" align="right"/>
 
 # AdHoc.Results
 
