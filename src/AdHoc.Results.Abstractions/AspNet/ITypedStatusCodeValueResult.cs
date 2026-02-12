@@ -1,36 +1,29 @@
 // Copyright AdHoc Authors
 // SPDX-License-Identifier: MIT
 
-#if FEATURE_HTTP
-using AdHoc.Results.HTTP.Abstractions;
-using System.Runtime.CompilerServices;
-
 #if FEATURE_ASPNET
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-#endif
 
-namespace AdHoc.Results.Abstractions;
+namespace AdHoc.Results.HTTP.Abstractions;
 
-public partial interface ICreated : IStatusCodeResult
+public partial interface ITypedStatusCodeValueResult<TResult>
 {
-    const int HTTPStatusCode = 201;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder) =>
+        PopulateMetadata(method, builder, TResult.HTTPStatusCode);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    Task IHttpResult.ExecuteAsync(HttpContext httpContext) => Task.CompletedTask;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    IActionResult IConvertToActionResult.Convert() => Convert(TResult.ValueType, Value, TResult.HTTPStatusCode);
 }
-
-public partial interface ITypedCreated<TResult>
-    : ITypedStatusCodeResult<TResult>;
-
-public partial interface ICreated<TValue>
-    : IStatusCodeValueResult;
-
-public partial interface ITypedCreated<TResult, TValue>
-    : ITypedStatusCodeResult<TResult, TValue>
+public partial interface ITypedStatusCodeResult<TResult, TValue>
 {
-#if FEATURE_ASPNET
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder) =>
         PopulateMetadata<TResult, TValue>(method, builder, TResult.HTTPStatusCode);
@@ -38,6 +31,5 @@ public partial interface ITypedCreated<TResult, TValue>
     Task IHttpResult.ExecuteAsync(HttpContext httpContext) => Task.CompletedTask;
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     IActionResult IConvertToActionResult.Convert() => Convert(TResult.ValueType, Value, TResult.HTTPStatusCode);
-#endif
 }
 #endif

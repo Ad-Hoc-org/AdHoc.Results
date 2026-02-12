@@ -3,6 +3,7 @@
 
 #if FEATURE_ASPNET
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -23,13 +24,16 @@ public partial interface IResults
             return result is not IResults results ? result : results.Variant;
         });
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void IEndpointMetadataProvider.PopulateMetadata(
         MethodInfo method,
         EndpointBuilder builder
     ) =>
         PopulateMetadata(method, builder);
 
-    Task IHttpResult.ExecuteAsync(HttpContext httpContext) => Task.CompletedTask;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    Task IHttpResult.ExecuteAsync(HttpContext httpContext) => Variant.ExecuteAsync(httpContext);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     IActionResult IConvertToActionResult.Convert() => Variant.Convert();
 }
 #endif

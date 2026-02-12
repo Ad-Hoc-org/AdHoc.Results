@@ -18,6 +18,10 @@ public partial interface ITypedStatusCodeValueResult<TResult>
     : ITypedValueResult<TResult>, ITypedStatusCodeResult<TResult>
     where TResult : ITypedStatusCodeValueResult<TResult>;
 
+public partial interface ITypedStatusCodeResult<TResult, TValue>
+    : ITypedResult<TResult, TValue>, ITypedStatusCodeValueResult<TResult>
+    where TResult : ITypedStatusCodeResult<TResult, TValue>;
+
 public partial interface ITypedStatusCodeError<TError>
     : ITypedError<TError>, ITypedStatusCodeResult<TError>, IStatusCodeError
     where TError : ITypedStatusCodeError<TError>;
