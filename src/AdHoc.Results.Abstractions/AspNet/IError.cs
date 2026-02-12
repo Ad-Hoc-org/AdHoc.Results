@@ -38,7 +38,7 @@ public partial interface IError
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     Task IHttpResult.ExecuteAsync(HttpContext httpContext) => ExecuteAsync(httpContext, this, 500);
-    protected static Task ExecuteAsync(HttpContext httpContext, IError error, int statusCode) => HttpResults.Problem(
+    protected static Task ExecuteAsync(HttpContext httpContext, IError error, int statusCode) => TypedResults.Problem(
         type: error.Type,
         detail: error.Message,
         statusCode: statusCode,

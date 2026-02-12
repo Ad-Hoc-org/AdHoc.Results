@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 using System.Collections.Immutable;
-using System.Diagnostics;
+using System.Xml.Schema;
 using Microsoft.CodeAnalysis;
 
 namespace AdHoc.Results.SourceGenerators;
@@ -37,8 +37,8 @@ internal static partial class ITypeSymbolExtensions
 
     public static bool HasImplemented(this ITypeSymbol typeSymbol, IPropertySymbol definedProperty, out IPropertySymbol? property)
     {
-        property = GetProperty(typeSymbol);
-        if (property is not null)
+        property = GetProperty(typeSymbol, definedProperty);
+        if (property is { IsAbstract: false })
             return true;
 
         foreach (var inf in typeSymbol.Interfaces)
@@ -46,8 +46,8 @@ internal static partial class ITypeSymbolExtensions
             ImmutableArray<INamedTypeSymbol> interfaces = [inf, .. inf.AllInterfaces];
             foreach (var i in interfaces)
             {
-                var p = GetProperty(i);
-                if (p is not null && !p.IsAbstract)
+                var p = GetProperty(i, definedProperty);
+                if (p is { IsAbstract: false })
                 {
                     // two different implementations found
                     if (property is not null && !p.Equals(property, SymbolEqualityComparer.Default))
@@ -70,39 +70,80 @@ internal static partial class ITypeSymbolExtensions
 
         return property is not null;
 
-        IPropertySymbol? GetProperty(ITypeSymbol typeSymbol) => typeSymbol
-            .GetMembers().OfType<IPropertySymbol>()
-            .FirstOrDefault(p => SymbolEqualityComparer.Default.Equals(p, definedProperty)
-            || p.ExplicitInterfaceImplementations.Any(e => SymbolEqualityComparer.Default.Equals(e, definedProperty)));
     }
+    public static IPropertySymbol? GetProperty(this ITypeSymbol typeSymbol, IPropertySymbol definedProperty) =>
+        typeSymbol.GetMembers().OfType<IPropertySymbol>()
+            .FirstOrDefault(p => SymbolEqualityComparer.Default.Equals(p, definedProperty)
+                || p.ExplicitInterfaceImplementations.Any(e => SymbolEqualityComparer.Default.Equals(e, definedProperty))
+            );
 
     public static bool HasImplemented(this ITypeSymbol typeSymbol, IPropertySymbol definedProperty) =>
         typeSymbol.HasImplemented(definedProperty, out _);
 
-    public static bool HasOrWill(
-        this INamedTypeSymbol type,
-        IPropertySymbol property,
-        bool hasOthers
+    public static bool RequiresImplementation(
+        this ITypeSymbol typeSymbol,
+        IPropertySymbol definedProperty,
+        IEnumerable<INamedTypeSymbol> willHaveProperty
     )
     {
-        var has = type.HasImplemented(property, out var prop);
-        if (hasOthers)
+        if (typeSymbol.GetProperty(definedProperty) is not null)
+            return false;
+
+        bool implements = false;
+        IPropertySymbol? property = null;
+        foreach (var inf in typeSymbol.Interfaces)
         {
-            if (has)
-                // has to be implemented in this type, otherwise multiple inheritance
-                has = property!.ContainingType.TypeKind != TypeKind.Interface
-                    || SymbolEqualityComparer.Default.Equals(property!.ContainingType, type);
-            else
-                has = hasOthers; // inherited
+            if (willHaveProperty.Contains(inf, SymbolEqualityComparer.Default))
+            {
+                if (implements)
+                    return true;
+
+                implements = true;
+                continue;
+            }
+
+            var p = GetProperty(inf, definedProperty);
+            if (p is { IsAbstract: false })
+            {
+                if (implements)
+                    return true;
+        
+                implements = true;
+                property = p;
+                continue;
+            }
+
+            foreach (var i in inf.AllInterfaces)
+            {
+                p = GetProperty(i, definedProperty);
+                if (p is { IsAbstract: false })
+                {
+                    if (property is not null && !p.Equals(property, SymbolEqualityComparer.Default))
+                    {
+                        var propInf = property.ContainingType;
+                        if (propInf.AllInterfaces.Contains(i, SymbolEqualityComparer.Default))
+                            break;
+                        if (i.AllInterfaces.Contains(propInf, SymbolEqualityComparer.Default))
+                        {
+                            property = p; // more specific
+                            break;
+                        }
+                        return true;
+                    }
+                    property = p;
+                    break;
+                }
+            }
         }
-        return has;
+
+        return !(implements || property is not null);
     }
 
 
     public static bool HasImplemented(this ITypeSymbol typeSymbol, IMethodSymbol definedMethod, out IMethodSymbol? method)
     {
         method = GetMethod(typeSymbol);
-        if (method is not null)
+        if (method is { IsAbstract: false })
             return true;
 
         foreach (var inf in typeSymbol.Interfaces)
@@ -111,7 +152,7 @@ internal static partial class ITypeSymbolExtensions
             foreach (var i in interfaces)
             {
                 var m = GetMethod(i);
-                if (m is not null && !m.IsAbstract)
+                if (m is { IsAbstract: false })
                 {
                     // two different implementations found
                     if (method is not null && !m.Equals(method, SymbolEqualityComparer.Default))

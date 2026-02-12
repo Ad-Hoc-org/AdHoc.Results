@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Text;
 using Microsoft.CodeAnalysis;
 
@@ -45,24 +44,23 @@ public partial class ErrorSourceGenerator : IIncrementalGenerator
                     TypedError = typedError?.ToQualifiedName()
                 };
 
-                var others = type.GetTypes()
-                    .Select(t => infos.TryGetValue(t, out var v) ? v : null!)
-                    .Where(v => v is not null)
-                    .ToImmutableHashSet();
+                var inherits = type.GetTypes().ToImmutableHashSet(SymbolEqualityComparer.Default);
+                var others = infos
+                    .Where(kv => inherits.Contains(kv.Key))
+                    .ToImmutableDictionary(SymbolEqualityComparer.Default);
 
-                var hasOthers = others.Count > 0;
-                info.HasType = type.HasOrWill(typeProperty, hasOthers)
-                    && type.HasOrWill(errorTypeProperty, hasOthers);
-                info.HasMessage = type.HasOrWill(messageProperty, hasOthers);
-                info.HasException = type.HasOrWill(exceptionProperty, hasOthers);
-                info.HasErrors = type.HasOrWill(errorsProperty, hasOthers);
+                info.HasType = type.HasImplemented(typeProperty) && type.HasImplemented(errorTypeProperty);
+                info.HasMessage = type.HasImplemented(messageProperty);
+                info.HasException = type.HasImplemented(exceptionProperty);
+                info.HasErrors = type.HasImplemented(errorsProperty);
 
                 if (typedError is not null)
                 {
-                    var hasTypedOthers = others.Any(o => o.TypedError is not null);
-                    info.HasErrorType = type.HasOrWill(
+                    info.HasErrorType = !type.RequiresImplementation(
                         typedError.GetMembers(TypedErrorTypeName).OfType<IPropertySymbol>().First(),
-                        hasTypedOthers
+                        others.Where(o => o.Value.TypedError is not null)
+                            .Select(o => o.Key)
+                            .ToImmutableHashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default)
                     );
                     if (!info.HasErrorType)
                         if (type.HasConstant(TypedErrorTypeName, out var constant))

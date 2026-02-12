@@ -13,6 +13,5 @@ public interface ITypedError<TError>
     string IError.Type => TError.ErrorType;
 
     static ImmutableArray<Type> IResultVariantsProvider.Variants => [typeof(TError)];
-    bool IResult.IsSuccess => false;
-    static bool ITypedResult<TError>.IsSuccess => false;
+    static bool ITypedResult.IsSuccess => false;
 }

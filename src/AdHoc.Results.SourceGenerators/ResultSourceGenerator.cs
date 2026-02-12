@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Text;
 using Microsoft.CodeAnalysis;
 
@@ -32,43 +33,28 @@ public partial class ResultSourceGenerator : IIncrementalGenerator
                 {
                     HasToBeSealed = type.IsSealed && !type.IsAbstract && typedResult is not null,
                     IsError = type.AllInterfaces.Any(i => i.ToQualifiedArityName() == IErrorName),
-                    TypedResult = typedResult?.ToQualifiedName(),
+                    IsTypedResult = typedResult is not null,
                     TypedValueResult = typedValueResult?.ToQualifiedName(),
                     ValueType = typedValueResult?.TypeArguments[1].ToQualifiedName(),
                 };
 
-                var others = type.GetTypes()
-                    .Select(t => infos.TryGetValue(t, out var v) ? v : null!)
-                    .Where(v => v is not null)
-                    .ToImmutableHashSet();
+                var inherits = type.GetTypes().ToImmutableHashSet(SymbolEqualityComparer.Default);
+                var others = infos
+                    .Where(kv => inherits.Contains(kv.Key))
+                    .ToImmutableDictionary(SymbolEqualityComparer.Default);
 
-                info.HasSuccess = type.HasImplemented(successProperty, out var property);
-                if (others.Count > 0)
-                {
-                    if (info.HasSuccess)
-                        // has to be implemented in this type, otherwise multiple inheritance
-                        info.HasSuccess = property!.ContainingType.TypeKind != TypeKind.Interface
-                            || SymbolEqualityComparer.Default.Equals(property!.ContainingType, type);
-                    else
-                        info.HasSuccess = true; // inherited
-                }
+                info.HasSuccess = !type.RequiresImplementation(
+                    successProperty,
+                    others.Where(kv => kv.Value.RequireSuccess)
+                        .Select(kv => kv.Key).ToImmutableHashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default)
+                );
 
                 if (typedResult is not null)
-                {
-                    info.HasTypedSuccess = type.HasImplemented(
+                    info.HasTypedSuccess = !type.RequiresImplementation(
                         typedResult.GetMembers(IsSuccessName).OfType<IPropertySymbol>().First(p => p.IsStatic),
-                        out property
+                        others.Where(kv => kv.Value.RequireTypedSuccess)
+                            .Select(kv => kv.Key).ToImmutableHashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default)
                     );
-                    if (others.Count > 0)
-                    {
-                        if (info.HasTypedSuccess)
-                            // has to be implemented in this type, otherwise multiple inheritance
-                            info.HasTypedSuccess = property!.ContainingType.TypeKind != TypeKind.Interface
-                                || SymbolEqualityComparer.Default.Equals(property!.ContainingType, type);
-                        else
-                            info.HasTypedSuccess = others.Any(o => o.HasTypedSuccess); // inherited
-                    }
-                }
 
                 if (!type.IsAbstract && typedValueResult is not null && type.HasImplemented(
                         typedValueResult.GetMembers("Create").OfType<IMethodSymbol>().First(m => m.IsStatic)))
@@ -91,7 +77,7 @@ public partial class ResultSourceGenerator : IIncrementalGenerator
 
             if (info.RequireTypedSuccess)
                 appendMembers += source => source.Append($@"
-    static bool {info.TypedResult}.{IsSuccessName} => {isSuccessValue};");
+    static bool {TypedResultName}.{IsSuccessName} => {isSuccessValue};");
 
             if (info.RequireCreate)
                 appendMembers += source =>
@@ -121,9 +107,9 @@ public partial class ResultSourceGenerator : IIncrementalGenerator
         public bool HasSuccess { get; set; }
         public bool RequireSuccess => !IsError && !HasSuccess;
 
-        public string? TypedResult { get; set; }
+        public bool IsTypedResult { get; set; }
         public bool HasTypedSuccess { get; set; }
-        public bool RequireTypedSuccess => TypedResult is not null && !HasTypedSuccess;
+        public bool RequireTypedSuccess => IsTypedResult && !HasTypedSuccess;
 
         public string? TypedValueResult { get; set; }
         public string? ValueType { get; set; }

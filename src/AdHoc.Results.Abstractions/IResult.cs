@@ -9,5 +9,5 @@ public partial interface IResult
     : IResultVariantsProvider
 {
     static ImmutableArray<Type> IResultVariantsProvider.Variants => [typeof(IResult)];
-    bool IsSuccess { get; }
+    bool IsSuccess => true;
 }

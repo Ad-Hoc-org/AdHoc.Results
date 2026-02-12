@@ -6,7 +6,8 @@ namespace AdHoc.Results.SourceGenerators;
 internal static class Constants
 {
     public const string ResultName = "AdHoc.Results.Abstractions.IResult";
-    public const string TypedResultName = "AdHoc.Results.Abstractions.ITypedResult`1";
+    public const string TypedResultName = "AdHoc.Results.Abstractions.ITypedResult";
+    //public const string TypedResultName = "AdHoc.Results.Abstractions.ITypedResult`1";
     public const string TypedResultsInterface = "AdHoc.Results.Abstractions.ITypedResults`1";
     public const string TypedValueResultName = "AdHoc.Results.Abstractions.ITypedResult`2";
     public const string IsSuccessName = "IsSuccess";
