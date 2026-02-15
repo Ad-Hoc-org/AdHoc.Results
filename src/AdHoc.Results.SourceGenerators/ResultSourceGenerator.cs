@@ -27,11 +27,13 @@ public partial class ResultSourceGenerator : IIncrementalGenerator
 
                 var typedResult = type.AllInterfaces
                     .FirstOrDefault(i => i.ToQualifiedArityName() == TypedResultName);
+                var typedResults = type.AllInterfaces
+                    .FirstOrDefault(i => i.ToQualifiedArityName() == TypedResultsName);
                 var typedValueResult = type.AllInterfaces
                     .FirstOrDefault(i => i.ToQualifiedArityName() == TypedValueResultName);
                 var info = new ResultInfo(type)
                 {
-                    HasToBeSealed = type.IsSealed && !type.IsAbstract && typedResult is not null,
+                    HasToBeSealed = type.IsSealed && !type.IsAbstract && (typedResult is not null || typedResults is not null),
                     IsError = type.AllInterfaces.Any(i => i.ToQualifiedArityName() == IErrorName),
                     IsTypedResult = typedResult is not null,
                     TypedValueResult = typedValueResult?.ToQualifiedName(),

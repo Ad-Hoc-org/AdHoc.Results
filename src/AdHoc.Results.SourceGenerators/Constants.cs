@@ -7,10 +7,12 @@ internal static class Constants
 {
     public const string ResultName = "AdHoc.Results.Abstractions.IResult";
     public const string TypedResultName = "AdHoc.Results.Abstractions.ITypedResult";
-    //public const string TypedResultName = "AdHoc.Results.Abstractions.ITypedResult`1";
-    public const string TypedResultsInterface = "AdHoc.Results.Abstractions.ITypedResults`1";
     public const string TypedValueResultName = "AdHoc.Results.Abstractions.ITypedResult`2";
     public const string IsSuccessName = "IsSuccess";
+
+    public const string ResultsName = "AdHoc.Results.Abstractions.IResults";
+    public const string TypedResultsName = "AdHoc.Results.Abstractions.ITypedResults`1";
+    public const string VariantName = "Variant";    
 
     public const string IErrorName = "AdHoc.Results.Abstractions.IError";
     public const string ErrorName = "AdHoc.Results.Error";

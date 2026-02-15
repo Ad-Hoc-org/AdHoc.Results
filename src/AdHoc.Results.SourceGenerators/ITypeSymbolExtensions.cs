@@ -25,6 +25,9 @@ internal static partial class ITypeSymbolExtensions
             miscellaneousOptions: SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier
         );
 
+    public static string ToQualifiedNameWithoutArity(this INamedTypeSymbol typeSymbol) =>
+        typeSymbol.ToDisplayString(QualifiedNameOnlyFormat);
+
     public static string ToQualifiedArityName(this INamedTypeSymbol typeSymbol) =>
         typeSymbol.ToDisplayString(QualifiedNameOnlyFormat) + (typeSymbol.Arity == 0 ? "" : $"`{typeSymbol.Arity}");
 
@@ -212,6 +215,20 @@ internal static partial class ITypeSymbolExtensions
             .GetMembers().OfType<IFieldSymbol>()
             .FirstOrDefault(f => f.IsConst && f.Name == constantName);
     }
+
+    public static bool HasConstructor(this ITypeSymbol typeSymbol, params ImmutableArray<ITypeSymbol> parameterTypes) =>
+        typeSymbol.GetMembers().OfType<IMethodSymbol>()
+            .Any(m => m.MethodKind == MethodKind.Constructor
+                && m.Parameters.Length == parameterTypes.Length
+                && m.Parameters.Select(p => p.Type).SequenceEqual(parameterTypes, SymbolEqualityComparer.Default)
+            );
+
+    public static bool HasImplicitConversion(this ITypeSymbol typeSymbol, ITypeSymbol targetType) =>
+        typeSymbol.GetMembers().OfType<IMethodSymbol>()
+            .Any(m => m.MethodKind == MethodKind.Conversion
+                && m.Name == "op_Implicit"
+                && SymbolEqualityComparer.Default.Equals(m.ReturnType, targetType)
+            );
 
     public static IEnumerable<INamedTypeSymbol> GetTypes(this INamedTypeSymbol typeSymbol)
     {

@@ -107,66 +107,12 @@ using {AbstractionsNamespace};
 
 namespace {Namespace};
 
-public readonly partial record struct {typeDefinition}
+public partial record struct {typeDefinition}
     : ITypedResults<{typeDefinition}, {genericArgs}>");
 
             AppendGenericConstraints(source, results);
+            source.Append(';');
 
-            source.Append($@"
-{{
-
-    public IResult Variant {{ get; }}
-    
-    public bool IsSuccess => Variant.IsSuccess;
-
-    public Results(IResult variant)
-#if DEBUG
-    {{
-        Debug.Assert(variant is {GenericResultPrefix}0 or {string.Join(" or ", Enumerable.Range(1, results - 1).Select(i => $"{GenericResultPrefix}{i}"))}, 
-            $""Invalid result type '{{variant.GetType()}}' for '{{nameof({typeDefinition})}}'"");
-        Variant = variant;
-    }}
-#else
-    => Variant = variant;
-#endif
-");
-
-            //        // generate typesafe constructors
-            //        for (var i = 0; i < results; i++)
-            //            source.Append($@"
-            //public Results({GenericResultPrefix}{i} result) => Variant = result;");
-            //        source.AppendLine();
-
-            source.AppendLine($@"
-    public override string? ToString() => Variant.ToString();");
-
-            // implicit operators for generic result
-            for (var i = 0; i < results; i++)
-                source.Append($@"
-    public static implicit operator {typeDefinition}({GenericResultPrefix}{i} result) => new(result);");
-            source.AppendLine();
-
-            //        // implicit operators for swapped generic results
-            //        GenerateSwappedGenericArguments(genericArgs =>
-            //            source.Append($@"
-            //public static implicit operator {typeDefinition}(Results<{genericArgs}> result) => new(result.Variant);"),
-            //            results, notDefault: true
-            //        );
-            //        source.AppendLine();
-
-            //        // implicit operators from lower arity of results
-            //        for (var i = results; i-- > MinResults;)
-            //        {
-            //            GenerateSwappedGenericArguments(genericArgs =>
-            //                source.Append($@"
-            //public static implicit operator {typeDefinition}(Results<{genericArgs}> result) => new(result.Variant);"),
-            //                i, end: results
-            //            );
-            //            source.AppendLine();
-            //        }
-
-            source.Append($@"
-}}");
             context.AddSource($"Results`{results}.g.cs", source.ToString());
         }
     }
