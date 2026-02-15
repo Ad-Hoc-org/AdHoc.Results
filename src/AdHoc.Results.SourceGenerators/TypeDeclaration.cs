@@ -14,6 +14,7 @@ internal record TypeDeclaration
     public bool IsAbstract { get; set; }
     public bool IsRecord { get; set; }
     public TypeKind Kind { get; set; }
+    public string Name { get; set; } = string.Empty;
     public string QualifiedName { get; set; } = string.Empty;
     public string DeclarationName { get; set; } = string.Empty;
     public string QualifiedArityName { get; set; } = string.Empty;
@@ -30,6 +31,7 @@ internal record TypeDeclaration
         IsAbstract = typeSymbol.IsAbstract;
         IsRecord = typeSymbol.IsRecord;
         Kind = typeSymbol.TypeKind;
+        Name = typeSymbol.Name;
         DeclarationName = typeSymbol.ToDeclarationName();
         QualifiedName = typeSymbol.ToQualifiedName();
         QualifiedArityName = typeSymbol.ToQualifiedArityName();

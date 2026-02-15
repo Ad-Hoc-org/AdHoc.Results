@@ -50,6 +50,14 @@ public partial class ResultsSourceGenerator : IIncrementalGenerator
                         if (!type.HasImplicitConversion(typeArgument))
                             missing.Add(typeArgument.ToQualifiedName());
                     info.MissingConversions = missing.ToImmutableArray();
+
+                    var valueResultType = genericType.TypeArguments[0].AllInterfaces.FirstOrDefault(i => i.ToQualifiedArityName() == TypedValueResultName);
+                    if (valueResultType is not null)
+                    {
+                        info.IsValueResult = true;
+                        info.HasValueConversion = type.HasImplicitConversion(valueResultType);
+                        info.ValueType = valueResultType.TypeArguments[1].ToQualifiedName();
+                    }
                 }
 
                 infos[type] = info;
@@ -71,12 +79,11 @@ public partial class ResultsSourceGenerator : IIncrementalGenerator
                 if (info.TypeArguments.Length == 0)
                     appendMembers += source =>
                         source.Append($@"
-    public Results(global::{ResultName} result) => Variant = result");
+    public {info.Name}(global::{ResultName} result) => Variant = result");
                 else
                     appendMembers += source =>
                         source.Append($@"
-
-    public Results(global::{ResultName} result)
+    public {info.Name}(global::{ResultName} result)
 #if DEBUG
     {{
         global::System.Diagnostics.Debug.Assert(result is {string.Join(" or ", info.TypeArguments)}, 
@@ -90,7 +97,8 @@ public partial class ResultsSourceGenerator : IIncrementalGenerator
             if (info.RequiresToString)
                 appendMembers += source =>
                     source.Append($@"
-    public override string? ToString() => Variant.ToString();");
+    public override string? ToString() => Variant.ToString();
+");
 
             if (info.RequiresConversions)
                 appendMembers += source =>
@@ -99,6 +107,11 @@ public partial class ResultsSourceGenerator : IIncrementalGenerator
                         source.Append($@"
     public static implicit operator {info.QualifiedName}({type} result) => new(result);");
                 };
+
+            if (info.RequiresValueConversion)
+                appendMembers += source =>
+                    source.Append($@"
+    public static implicit operator {info.QualifiedName}({info.ValueType} value) => new({info.TypeArguments[0]}.Create(value));");
 
             var source = new StringBuilder()
                 .AppendLine("#nullable enable")
@@ -127,8 +140,15 @@ public partial class ResultsSourceGenerator : IIncrementalGenerator
         public ImmutableArray<string> MissingConversions { get; set; }
         public bool RequiresConversions => MissingConversions.Length > 0;
 
+
+        public bool IsValueResult { get; set; }
+        public bool HasValueConversion { get; set; }
+        public string? ValueType { get; set; }
+        public bool RequiresValueConversion => IsValueResult && !HasValueConversion;
+
+
         public bool RequireImplementation =>
-            HasToReadOnly || RequiresToString || RequiresConstructor || RequiresVariant || RequiresConversions;
+            HasToReadOnly || RequiresToString || RequiresConstructor || RequiresVariant || RequiresConversions || RequiresValueConversion;
 
         public ResultsInfo(INamedTypeSymbol typeSymbol) : base(typeSymbol)
         {

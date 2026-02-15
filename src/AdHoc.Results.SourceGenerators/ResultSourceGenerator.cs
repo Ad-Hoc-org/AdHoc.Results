@@ -85,7 +85,7 @@ public partial class ResultSourceGenerator : IIncrementalGenerator
                 appendMembers += source =>
                 {
                     source.Append($@"
-    static {info.QualifiedName} {info.TypedValueResult}.Create({info.ValueType} value) => new(value);
+    public static {info.QualifiedName} Create({info.ValueType} value) => new(value);
 
     public static implicit operator {info.ValueType}({info.QualifiedName} result) => result.Value;
     public static implicit operator {info.QualifiedName}({info.ValueType} value) => new(value);");
