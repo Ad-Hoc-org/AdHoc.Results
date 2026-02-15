@@ -21,12 +21,15 @@ public abstract record Error : IError
     protected Error()
     {
         var trace = new StackTrace(1, true);
-        var type = GetType().FullName;
+        var type = GetType();
+        if (type is { IsConstructedGenericType: true })
+            type = type.GetGenericTypeDefinition();
+        var typeName = type.FullName!;
         bool IsConstructor(StackFrame frame)
         {
             var method = DiagnosticMethodInfo.Create(frame);
             return method is not null &&
-                method.Name == ".ctor" && method.DeclaringTypeName == type;
+                method.Name == ".ctor" && method.DeclaringTypeName == typeName;
         }
 
         var frames = trace.GetFrames();

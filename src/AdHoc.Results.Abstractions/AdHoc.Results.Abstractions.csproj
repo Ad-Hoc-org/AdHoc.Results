@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <VersionTags>aspnet;http;trace;</VersionTags>
+    <VersionTags>aspnet;http;trace</VersionTags>
   </PropertyGroup>
   <ItemGroup>
     <VersionTags Include="trace" />
