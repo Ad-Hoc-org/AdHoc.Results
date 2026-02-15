@@ -21,14 +21,23 @@ internal static partial class StringBuilderExtensions
             source.AppendLine($@"namespace {type.Namespace}
 {{");
 
+        if (type.ContainingType is not null)
+        {
+            var ct = type.ContainingType;
+            do
+            {
+                source.AppendAccessibility(ct.Accessibility).Append(' ')
+                    .AppendTypeKind(ct).Append(' ')
+                    .AppendLine(ct.DeclarationName)
+                    .Append('{').AppendLine();
+                ct = ct.ContainingType;
+            }
+            while (ct != null);
+        }
+
         source.AppendAccessibility(type.Accessibility).Append(' ')
             .AppendTypeKind(type, partial: partial, sealing: sealing, readOnly: readOnly).Append(' ')
             .Append(type.DeclarationName);
-        //source.Append(type.ToDisplayString(new SymbolDisplayFormat(
-        //    typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameOnly,
-        //    genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters | SymbolDisplayGenericsOptions.IncludeVariance,
-        //    miscellaneousOptions: SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier
-        //)));
 
         if (appendTypes is not null)
             appendTypes(source);
@@ -40,6 +49,18 @@ internal static partial class StringBuilderExtensions
             source.AppendLine().Append('{');
             appendMembers(source);
             source.AppendLine().Append('}');
+        }
+
+
+        if (type.ContainingType is not null)
+        {
+            var ct = type.ContainingType;
+            do
+            {
+                source.AppendLine().Append('}');
+                ct = ct.ContainingType;
+            }
+            while (ct != null);
         }
 
         if (type.Namespace is not null)

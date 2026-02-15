@@ -101,7 +101,7 @@ public partial class ErrorSourceGenerator : IIncrementalGenerator
     public override string {ErrorTypeName} => {info.ErrorType};");
                 else
                     appendMembers += source => source.Append($@"
-    public override string? {ErrorTypeName} {{ get; init; }}");
+    public override string? {ErrorTypeName} {{ get; }}");
             }
 
             if (!info.HasMessage)

@@ -8,6 +8,7 @@ namespace AdHoc.Results.SourceGenerators;
 internal record TypeDeclaration
 {
     public string? Namespace { get; set; }
+    public TypeDeclaration? ContainingType { get; set; }
     public Accessibility Accessibility { get; set; }
     public bool IsStatic { get; set; }
     public bool IsAbstract { get; set; }
@@ -23,6 +24,7 @@ internal record TypeDeclaration
     public TypeDeclaration(INamedTypeSymbol typeSymbol)
     {
         Namespace = typeSymbol.ContainingNamespace.IsGlobalNamespace ? null : typeSymbol.ContainingNamespace.ToDisplayString();
+        ContainingType = typeSymbol.ContainingType is not null ? new TypeDeclaration(typeSymbol.ContainingType) : null;
         Accessibility = typeSymbol.DeclaredAccessibility;
         IsStatic = typeSymbol.IsStatic;
         IsAbstract = typeSymbol.IsAbstract;
