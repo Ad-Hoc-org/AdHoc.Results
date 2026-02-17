@@ -31,7 +31,7 @@
     <PackageOutputPath>$(RepoRoot)nupkgs/</PackageOutputPath>
 
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackagePrimaryLicenseFile>LICENSE</PackagePrimaryLicenseFile>
     <PackageThirdPartyNoticesFile>THIRD-PARTY-NOTICES</PackageThirdPartyNoticesFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
