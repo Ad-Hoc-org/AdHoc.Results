@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Text;
 using Microsoft.CodeAnalysis;
 
@@ -40,7 +41,7 @@ public partial class ResultsSourceGenerator : IIncrementalGenerator
                         .Any(p => p.Type.Equals(variantProperty.Type, SymbolEqualityComparer.Default)),
                     HasConstructor = type.HasConstructor(resultType),
                     HasToString = type.GetMembers("ToString").OfType<IMethodSymbol>()
-                        .Any(m => m.Parameters.Length == 0 && m.ReturnType.SpecialType == SpecialType.System_String),
+                        .Any(m => m.Parameters.Length == 0 && m.ReturnType.SpecialType == SpecialType.System_String && !m.IsImplicitlyDeclared),
                 };
 
                 if (genericType is not null)
@@ -51,12 +52,19 @@ public partial class ResultsSourceGenerator : IIncrementalGenerator
                             missing.Add(typeArgument.ToQualifiedName());
                     info.MissingConversions = missing.ToImmutableArray();
 
-                    var valueResultType = genericType.TypeArguments[0].AllInterfaces.FirstOrDefault(i => i.ToQualifiedArityName() == TypedValueResultName);
+                    var firstResultType = genericType.TypeArguments[0];
+                    var valueResultType = firstResultType is ITypeParameterSymbol typeParameter
+                        ? typeParameter.ConstraintTypes.OfType<INamedTypeSymbol>()
+                            .FirstOrDefault(i => i.ToQualifiedArityName() == TypedValueResultName)
+                        : firstResultType.AllInterfaces.FirstOrDefault(i => i.ToQualifiedArityName() == TypedValueResultName);
                     if (valueResultType is not null)
                     {
+                        var valueType = valueResultType.TypeArguments[1];
                         info.IsValueResult = true;
-                        info.HasValueConversion = type.HasImplicitConversion(valueResultType);
-                        info.ValueType = valueResultType.TypeArguments[1].ToQualifiedName();
+                        info.ValueType = valueType.ToQualifiedName();
+                        info.HasValueConstructor = type.HasConstructor(valueType);
+                        // no conversions from/to interfaces - C# doesn't allow them
+                        info.HasValueConversion = valueType is not { TypeKind: TypeKind.Interface } && type.HasImplicitConversion(valueResultType);
                     }
                 }
 
@@ -94,6 +102,13 @@ public partial class ResultsSourceGenerator : IIncrementalGenerator
     => Variant = result;
 #endif
 ");
+            if (info.RequiresValueConstructor)
+                appendMembers += source =>
+                    source.Append($@"
+    public {info.Name}({info.ValueType} value) =>
+        Variant = {info.TypeArguments[0]}.Create(value)
+");
+
             if (info.RequiresToString)
                 appendMembers += source =>
                     source.Append($@"
@@ -111,7 +126,7 @@ public partial class ResultsSourceGenerator : IIncrementalGenerator
             if (info.RequiresValueConversion)
                 appendMembers += source =>
                     source.Append($@"
-    public static implicit operator {info.QualifiedName}({info.ValueType} value) => new({info.TypeArguments[0]}.Create(value));");
+    public static implicit operator {info.QualifiedName}({info.ValueType} value) => new(value);");
 
             var source = new StringBuilder()
                 .AppendLine("#nullable enable")
@@ -142,13 +157,17 @@ public partial class ResultsSourceGenerator : IIncrementalGenerator
 
 
         public bool IsValueResult { get; set; }
-        public bool HasValueConversion { get; set; }
         public string? ValueType { get; set; }
+
+        public bool HasValueConstructor { get; set; }
+        public bool RequiresValueConstructor => IsValueResult && !HasValueConstructor;
+
+        public bool HasValueConversion { get; set; }
         public bool RequiresValueConversion => IsValueResult && !HasValueConversion;
 
 
         public bool RequireImplementation =>
-            HasToReadOnly || RequiresToString || RequiresConstructor || RequiresVariant || RequiresConversions || RequiresValueConversion;
+            HasToReadOnly || RequiresToString || RequiresConstructor || RequiresVariant || RequiresConversions || RequiresValueConversion || RequiresValueConstructor;
 
         public ResultsInfo(INamedTypeSymbol typeSymbol) : base(typeSymbol)
         {

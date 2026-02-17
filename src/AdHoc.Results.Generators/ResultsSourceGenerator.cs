@@ -94,9 +94,10 @@ public partial interface ITypedResults<TResult, {genericArgs}>
 
     private static void GenerateResults(IncrementalGeneratorPostInitializationContext context)
     {
+        var source = new StringBuilder();
         for (var results = MinResults; results <= MaxResults; results++)
         {
-            var source = new StringBuilder();
+            source.Clear();
             var genericArgs = string.Join(", ", Enumerable.Range(0, results).Select(i => $"{GenericResultPrefix}{i}"));
             var typeDefinition = $"Results<{genericArgs}>";
 
@@ -115,6 +116,29 @@ public partial record struct {typeDefinition}
 
             context.AddSource($"Results`{results}.g.cs", source.ToString());
         }
+
+        for (var results = MinResults; results <= MaxResults; results++)
+        {
+            source.Clear();
+            var genericArgs = string.Join(", ", Enumerable.Range(0, results).Select(i => $"{GenericResultPrefix}{i}"));
+            var typeDefinition = $"Result<TValue, {genericArgs}>";
+
+            source.Append($@"#nullable enable
+using System.Collections.Immutable;
+using System.Diagnostics;
+using {AbstractionsNamespace};
+
+namespace {Namespace};
+
+public partial record struct {typeDefinition}
+    : ITypedResults<{typeDefinition}, {genericArgs}>
+    where {GenericResultPrefix}0 : ITypedResult<{GenericResultPrefix}0, TValue>");
+
+            AppendGenericConstraints(source, results, start: 1);
+            source.Append(';');
+
+            context.AddSource($"Result`{results + 1}.g.cs", source.ToString());
+        }
     }
 
 
@@ -127,13 +151,4 @@ public partial record struct {typeDefinition}
             source.Append($@"
     where {GenericResultPrefix}{i} : {(typed ? $"ITypedResult<{GenericResultPrefix}{i}>" : "IResult")}");
     }
-
-    //public static void GenerateSwappedGenericArguments(Action<string> generate, int results, int start = 0, int end = 0, bool notDefault = false)
-    //{
-    //    if (end == 0)
-    //        end = results;
-    //    for (var i = start + (notDefault ? 1 : 0); i < end; i++)
-    //        generate(string.Join(", ", Enumerable.Range(0, results - start).Select(j => $"{GenericResultPrefix}{(j + i - start) % (end - start) + start}")));
-    //}
-
 }
