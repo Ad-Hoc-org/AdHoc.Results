@@ -31,6 +31,20 @@ public partial class ResultsConstructorAnalyzerTests
             throw new Exception();
             """
         );
+        await Verify(
+            """
+            if (result.Variant is not Success<int>)
+                return new(result.Variant);
+            throw new Exception();
+            """
+        );
+        await Verify(
+            """
+            if (result.Variant is not Success<int> intSuccess)
+                return new(result.Variant);
+            throw new Exception();
+            """
+        );
     }
 
     [Fact]
@@ -91,6 +105,14 @@ public partial class ResultsConstructorAnalyzerTests
             """,
             result
         );
+        await Verify(
+            """
+            if (result.Variant is not Success<int> { Value: > 0 })
+                return new({|#0:result.Variant|});
+            throw new Exception();
+            """,
+            result
+        );
     }
 
     [Fact]
@@ -106,6 +128,21 @@ public partial class ResultsConstructorAnalyzerTests
                 return new(i.Value.ToString().Success());
             else
                 return new({|#0:result.Variant|});
+            """,
+            result
+        );
+        await Verify(
+            """
+            if (result is { Variant: not Success<int> { Value: > 0 } })
+                return new({|#0:result.Variant|});
+            throw new Exception();
+            """,
+            result
+        ); await Verify(
+            """
+            if (result is { Variant: not Success<int> })
+                return new({|#0:result.Variant|});
+            throw new Exception();
             """,
             result
         );

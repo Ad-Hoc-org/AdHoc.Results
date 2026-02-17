@@ -39,7 +39,20 @@ internal partial record ResultsSemanticCheck
                     }
                 }
 
-                ExtractTypesFromPattern(this, expression, pattern, negated, types);
+                if (pattern is UnaryPatternSyntax { OperatorToken.RawKind: (int)SyntaxKind.NotKeyword } unary)
+                {
+                    if (negated || patterns.Length > 1)
+                        break;
+#if LOGGING
+                    LogDebug("Visiting not pattern: " + unary.Pattern.GetType());
+#endif
+                    negated = true;
+                    ExtractTypesFromPattern(this, expression, unary.Pattern, negated, types);
+                }
+                else
+                {
+                    ExtractTypesFromPattern(this, expression, pattern, negated, types);
+                }
             }
 
 #if LOGGING

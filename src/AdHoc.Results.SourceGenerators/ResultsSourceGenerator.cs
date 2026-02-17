@@ -106,7 +106,7 @@ public partial class ResultsSourceGenerator : IIncrementalGenerator
                 appendMembers += source =>
                     source.Append($@"
     public {info.Name}({info.ValueType} value) =>
-        Variant = {info.TypeArguments[0]}.Create(value)
+        Variant = {info.TypeArguments[0]}.Create(value);
 ");
 
             if (info.RequiresToString)
@@ -120,7 +120,7 @@ public partial class ResultsSourceGenerator : IIncrementalGenerator
                 {
                     foreach (var type in info.MissingConversions)
                         source.Append($@"
-    public static implicit operator {info.QualifiedName}({type} result) => new(result);");
+    public static implicit operator {info.QualifiedName}({type} result) => new((global::{ResultName})result);");
                 };
 
             if (info.RequiresValueConversion)
