@@ -45,6 +45,13 @@ public partial class ResultsConstructorAnalyzerTests
             throw new Exception();
             """
         );
+        await Verify(
+            """
+            if (result.Variant is not Success<int>(var i))
+                return new(result.Variant);
+            throw new Exception();
+            """
+        );
     }
 
     [Fact]
