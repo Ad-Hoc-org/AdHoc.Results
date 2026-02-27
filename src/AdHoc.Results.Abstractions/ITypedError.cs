@@ -5,7 +5,7 @@ using System.Collections.Immutable;
 
 namespace AdHoc.Results.Abstractions;
 
-public interface ITypedError<TError>
+public partial interface ITypedError<TError>
     : IError, ITypedResult<TError>
     where TError : ITypedError<TError>
 {

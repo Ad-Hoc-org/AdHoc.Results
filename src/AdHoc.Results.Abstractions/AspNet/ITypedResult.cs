@@ -7,12 +7,12 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
 
-namespace AdHoc.Results.HTTP.Abstractions;
+namespace AdHoc.Results.Abstractions;
 
-public partial interface ITypedStatusCodeResult<TResult>
+public partial interface ITypedResult<TResult>
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder) =>
-        PopulateMetadata<TResult>(method, builder, TResult.HTTPStatusCode);
+        PopulateMetadata<TResult>(method, builder, 200);
 }
 #endif

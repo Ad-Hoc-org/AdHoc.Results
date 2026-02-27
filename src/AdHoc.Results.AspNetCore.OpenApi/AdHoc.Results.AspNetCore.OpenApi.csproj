@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <Using Include="AdHoc.Results.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../AdHoc.Results.Abstractions/AdHoc.Results.Abstractions.csproj" />
+  </ItemGroup>
+
+  <Target Name="BuildPackages" BeforeTargets="Restore;CollectPackageReferences">
+    <PropertyGroup>
+      <_UsePackage>false</_UsePackage>
+      <_UsePackage Condition="'$(Configuration)' != 'Debug' OR '$(_IsPacking)' == 'true'">true</_UsePackage>
+    </PropertyGroup>
+    <Exec Condition="$(_UsePackage) AND !Exists('$(PackageOutputPath)AdHoc.Results.Abstractions.$(Version).nupkg')" Command="dotnet pack &quot;$(MSBuildThisFileDirectory)../AdHoc.Results.Abstractions/AdHoc.Results.Abstractions.csproj&quot; /p:VersionTags=aspnet-http" ContinueOnError="true" />
+    <ItemGroup Condition="$(_UsePackage)">
+      <ProjectReference Remove="../AdHoc.Results.Abstractions/AdHoc.Results.Abstractions.csproj" />
+      <PackageReference Include="AdHoc.Results.Abstractions" VersionOverride="$(Version).2-aspnet-http" />
+    </ItemGroup>
+  </Target>
+</Project>

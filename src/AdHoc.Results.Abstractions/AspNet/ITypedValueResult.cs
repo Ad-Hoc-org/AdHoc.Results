@@ -17,9 +17,9 @@ public partial interface ITypedValueResult<TResult>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder) =>
         PopulateMetadata(method, builder, 200);
-    protected static new void PopulateMetadata(MethodInfo method, EndpointBuilder builder, int statusCode)
+    protected static void PopulateMetadata(MethodInfo method, EndpointBuilder builder, int statusCode)
     {
-        PopulateMetadata(method, builder, TResult.ValueType, statusCode);
+        PopulateMetadata<TResult>(method, builder, statusCode, TResult.ValueType);
         builder.FilterFactories.Add((context, next) =>
         {
             var typeInfo = context.ApplicationServices.GetRequiredService<IOptions<HttpJsonOptions>>()

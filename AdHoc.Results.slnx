@@ -31,6 +31,7 @@
   </Folder>
   <Project Path="src/AdHoc.Results.Abstractions/AdHoc.Results.Abstractions.csproj" Id="ca5612ac-bb00-4d97-b071-35258cdfe199" />
   <Project Path="src/AdHoc.Results.Analyzers/AdHoc.Results.Analyzers.csproj" Id="2b1ff38a-ecc6-4bd5-aa6d-eb081835cac6" />
+  <Project Path="src/AdHoc.Results.AspNetCore.OpenApi/AdHoc.Results.AspNetCore.OpenApi.csproj" />
   <Project Path="src/AdHoc.Results.Generators/AdHoc.Results.Generators.csproj" />
   <Project Path="src/AdHoc.Results.SourceGenerators/AdHoc.Results.SourceGenerators.csproj" Id="8a30b207-9320-4890-bb90-bb9d22316a03" />
   <Project Path="src/AdHoc.Results/AdHoc.Results.csproj" />
