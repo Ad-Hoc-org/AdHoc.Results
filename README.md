@@ -53,6 +53,17 @@ app.MapGet("/data", Results<Success<Data>, NotFound, Unauthorized, Forbidden> (i
 ```
 Only with version tag `aspnet` available.
 
+
+## OpenAPI Integration
+
+Enable enhanced OpenAPI output by adding `AdHoc.Results.AspNetCore.OpenApi`.
+```cs
+builder.Services.AddOpenApi(options => options.AddAdHocResults());
+```
+
+- If multiple results or errors share the same HTTP status code, the response schema is wrapped in `oneOf`.
+- If multiple errors map to `ProblemDetails` with the same status code, the schema adds a `type` property enum containing the expected error types.
+
 ## Features
 
 - ✅ **Pattern matching** support for elegant result/error handling
