@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - releases/*
+    tags:
+      - releases/*
   create:
     branches:
       - releases/*
