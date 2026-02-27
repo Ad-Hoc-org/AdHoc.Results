@@ -13,6 +13,6 @@ public partial interface ITypedStatusCodeError<TError>
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder) =>
-        PopulateMetadata(method, builder, TError.HTTPStatusCode);
+        PopulateMetadata<TError>(method, builder, TError.HTTPStatusCode, TError.ErrorType);
 }
 #endif

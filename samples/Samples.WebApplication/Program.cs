@@ -4,12 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 
 #endif
 
+using AdHoc.Results.AspNetCore.OpenApi;
 using Samples.WebApplication;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddProblemDetails();
-
 #if AOT
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -18,15 +19,14 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 #else
 // Add services to the container.
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options => options.AddAdHocResults());
 #endif
-
-//builder.Services.AddResults(options => options.AddProduces());
 
 var app = builder.Build();
 
 #if !AOT
 app.MapOpenApi();
+app.MapScalarApiReference();
 app.MapControllers();
 #endif
 

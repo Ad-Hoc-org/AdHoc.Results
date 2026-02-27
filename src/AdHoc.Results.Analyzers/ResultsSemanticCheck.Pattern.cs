@@ -132,7 +132,8 @@ internal partial record ResultsSemanticCheck
                             )
                             {
                                 if (recursive.PositionalPatternClause is not null)
-                                    return false; // positional patterns are not supported
+                                    if (recursive.PositionalPatternClause.Subpatterns.Any(sub => sub.Pattern is not VarPatternSyntax))
+                                        return false; // positional patterns are not supported
 
                                 if (recursive.Type is not null && !check.HasSynonym(expression))
                                     return false; // type check with negation is only on synonym supported

@@ -25,7 +25,7 @@
     <Using Include="Microsoft.AspNetCore.Http.IResult" Alias="IHttpResult" />
     <Using Include="Microsoft.AspNetCore.Http.Results" Alias="HttpResults" />
     <Using Include="Microsoft.AspNetCore.Http.Json.JsonOptions" Alias="HttpJsonOptions" />
-    <!--<InternalsVisibleTo Include="AdHoc.Results.AspNetCore" Key="$(PublicKey)" />-->
+    <InternalsVisibleTo Include="AdHoc.Results.AspNetCore.OpenApi" Key="$(PublicKey)" />
   </ItemGroup>
 
   <ItemGroup>

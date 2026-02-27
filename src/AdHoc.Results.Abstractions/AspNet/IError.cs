@@ -4,6 +4,7 @@
 #if FEATURE_ASPNET
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using AdHoc.Results.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -31,9 +32,19 @@ public partial interface IError
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder) =>
-        PopulateMetadata(method, builder, 500);
-    protected static new void PopulateMetadata(MethodInfo method, EndpointBuilder builder, int statusCode) =>
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode, typeof(ProblemDetails), ["application/problem+json"]));
+        PopulateMetadata<IError>(method, builder, 500);
+    protected static void PopulateMetadata<TError>(
+        MethodInfo method, EndpointBuilder builder,
+        int statusCode, string? errorType = null
+    )
+        where TError : IError
+    =>
+        builder.Metadata.Add(new ProducesResultTypeMetadata(
+            typeof(TError), typeof(ProblemDetails), statusCode, "application/problem+json"
+        )
+        {
+            ErrorType = errorType
+        });
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

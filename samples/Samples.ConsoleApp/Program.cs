@@ -34,7 +34,7 @@ static Results<Success<string>, InvalidData, NotFound, Unauthorized> ReadFile(st
 static Results<Success<int>, InvalidData, Unprocessable, Unauthorized> ReadConfig(string path) =>
     ReadFile(path).Variant switch
     {
-        Success<string> { Value: var value } =>
+        Success<string>(var value) =>
             int.TryParse(value, out var result) ? result.Success() : path.Unprocessable(),
         NotFound notFound => Unprocessable(notFound.Message, notFound),
         var variant => new(variant)

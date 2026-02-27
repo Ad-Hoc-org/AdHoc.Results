@@ -4,6 +4,7 @@
 #if FEATURE_ASPNET
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using AdHoc.Results.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -16,9 +17,25 @@ public partial interface IResult : IHttpResult, IConvertToActionResult, IEndpoin
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder) =>
-        PopulateMetadata(method, builder, 200);
-    protected static void PopulateMetadata(MethodInfo method, EndpointBuilder builder, int statusCode) =>
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode, typeof(void)));
+        PopulateMetadata<IResult>(method, builder, 200);
+    protected static void PopulateMetadata<TResult>(
+        MethodInfo method, EndpointBuilder builder,
+        int statusCode
+    )
+        where TResult : IResult
+    =>
+        builder.Metadata.Add(new ProducesResultTypeMetadata(
+            typeof(TResult), typeof(void), statusCode
+        ));
+    protected static void PopulateMetadata<TResult>(
+        MethodInfo method, EndpointBuilder builder,
+        int statusCode, Type valueType
+    )
+        where TResult : IResult
+    =>
+        builder.Metadata.Add(new ProducesResultTypeMetadata(
+            typeof(TResult), valueType, statusCode, "application/json"
+        ));
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -34,5 +51,4 @@ public partial interface IResult : IHttpResult, IConvertToActionResult, IEndpoin
     IActionResult IConvertToActionResult.Convert() => Convert(200);
     protected static IActionResult Convert(int statusCode) => new StatusCodeResult(statusCode);
 }
-
 #endif

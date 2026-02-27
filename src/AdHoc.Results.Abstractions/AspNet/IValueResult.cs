@@ -18,9 +18,7 @@ public partial interface IValueResult
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder) =>
-        PopulateMetadata(method, builder, typeof(object), 200);
-    protected static void PopulateMetadata(MethodInfo method, EndpointBuilder builder, Type valueType, int statusCode) =>
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode, valueType, ["application/json"]));
+        PopulateMetadata<IValueResult>(method, builder, 200, typeof(object));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     IActionResult IConvertToActionResult.Convert() => Convert(ValueType, Value, 200);
@@ -51,7 +49,7 @@ public partial interface IResult<out TValue>
     protected static void PopulateMetadata<TResult, TResultValue>(MethodInfo method, EndpointBuilder builder, int statusCode)
         where TResult : IResult<TResultValue>
     {
-        PopulateMetadata(method, builder, typeof(TResultValue), statusCode);
+        PopulateMetadata<TResult>(method, builder, statusCode, typeof(TResultValue));
         builder.FilterFactories.Add((context, next) =>
         {
             var typeInfo = context.ApplicationServices.GetRequiredService<IOptions<HttpJsonOptions>>()

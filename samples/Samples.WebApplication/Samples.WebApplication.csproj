@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Scalar.AspNetCore" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,7 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../src/AdHoc.Results.Abstractions/AdHoc.Results.Abstractions.csproj" />
     <ProjectReference Include="../../src/AdHoc.Results/AdHoc.Results.csproj" />
+    <ProjectReference Include="../../src/AdHoc.Results.AspNetCore.OpenApi/AdHoc.Results.AspNetCore.OpenApi.csproj" />
+    <ProjectReference Include="../../src/AdHoc.Results.SourceGenerators/AdHoc.Results.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
   
   <Target Name="DefineAOTConstants" BeforeTargets="BeforeCompile">
