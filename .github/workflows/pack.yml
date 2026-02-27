@@ -2,8 +2,6 @@ name: Publish NuGet Package to GitHub Registry
 
 on:
   push:
-    branches:
-      - releases/**
     tags:
       - releases/**
 
