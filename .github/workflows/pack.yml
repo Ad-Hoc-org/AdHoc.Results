@@ -1,9 +1,21 @@
-name: Publish NuGet Package to GitHub Registry
+name: Publish NuGet Package to Registry
 
 on:
   push:
+    branches:
+      - releases/*
     tags:
-      - releases/**
+      - releases/*
+  create:
+    branches:
+      - releases/*
+    tags:
+      - releases/*
+  pull_request:
+    branches:
+      - releases/*
+    tags:
+      - releases/*
 
 jobs:
   build-and-publish:
