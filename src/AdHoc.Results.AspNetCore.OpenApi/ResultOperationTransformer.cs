@@ -3,14 +3,10 @@
 
 using System.Collections.Immutable;
 using System.Reflection;
-using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.Json.Serialization.Metadata;
-using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
-using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 
 namespace AdHoc.Results.AspNetCore.OpenApi;
@@ -49,6 +45,8 @@ internal sealed class ResultOperationTransformer
                     response.Content.TryAdd(contentType, content = new OpenApiMediaType());
 
                 var oneOf = new List<IOpenApiSchema>();
+                IOpenApiSchema? problemSchema = null;
+                IList<JsonNode>? errorTypes = null;
                 foreach (var produce in produces.Where(r =>
                         (r.Type is not null && r.Type != typeof(void) && !r.ContentTypes.Any())
                         || r.ContentTypes.Contains(contentType)
@@ -63,13 +61,16 @@ internal sealed class ResultOperationTransformer
                     );
                     schema = ResolveSchema(context.Document!, schema);
 
-                    if (produce is ProducesResultTypeMetadata produceResult)
+                    if (produce.Type == typeof(ProblemDetails))
                     {
-                        if (produceResult.ErrorType is not null && produce.Type == typeof(ProblemDetails))
+                        problemSchema ??= schema;
+
+                        if (produce is ProducesResultTypeMetadata { ErrorType: { Length: > 0 } errorType })
                         {
-                            var schemaId = $"{nameof(ProblemDetails)}-{produceResult.ErrorType}";
-                            if (!schemas.ContainsKey(schemaId))
-                                schemas.TryAdd(schemaId, new OpenApiSchema
+                            if (errorTypes is null)
+                            {
+                                errorTypes = [];
+                                problemSchema = new OpenApiSchema
                                 {
                                     AllOf = [
                                         new OpenApiSchema
@@ -79,22 +80,32 @@ internal sealed class ResultOperationTransformer
                                             {
                                                 ["type"] = new OpenApiSchema
                                                 {
-                                                    Type = JsonSchemaType.String,
-                                                    Const = produceResult.ErrorType
+                                                    OneOf = [
+                                                        new OpenApiSchema {
+                                                            Enum = errorTypes
+                                                        },
+                                                        new OpenApiSchema {
+                                                            Type = JsonSchemaType.String | JsonSchemaType.Null
+                                                        }
+                                                    ]
                                                 }
                                             },
                                         },
-                                        schema
+                                        problemSchema
                                     ]
-                                });
-                            schema = new OpenApiSchemaReference(schemaId, context.Document);
+                                };
+                            }
+                            errorTypes.Add(errorType);
                         }
+
+                        continue;
                     }
 
                     oneOf.Add(schema);
                 }
 
-
+                if (problemSchema is not null)
+                    oneOf.Add(problemSchema);
                 content.Schema = oneOf.Count == 1 ? oneOf[0] : new OpenApiSchema
                 {
                     OneOf = oneOf
