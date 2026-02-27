@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi;
 
@@ -20,7 +21,7 @@ internal sealed class ResultOperationTransformer
         if (schemas is null)
             return;
 
-        if (!typeof(IResult).IsAssignableFrom(context.Description.ActionDescriptor.EndpointMetadata.OfType<MethodInfo>().FirstOrDefault()?.ReturnType))
+        if (!context.Description.ActionDescriptor.EndpointMetadata.OfType<ProducesResultTypeMetadata>().Any())
             return;
 
         foreach (var groupByStatusCode in context.Description.ActionDescriptor.EndpointMetadata
