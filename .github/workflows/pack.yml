@@ -48,7 +48,7 @@ jobs:
           echo "${{ secrets.SIGN_B64 }}" | base64 -d > .props/sign.snk
           
       - name: Pack the project
-        run: dotnet pack -c Release --output ./nupkgs /p:RepositoryUrl=https://github.com/${{ github.repository }}  /p:BuildInParallel=false
+        run: dotnet pack -c Release --output ./nupkgs /p:RepositoryUrl=https://github.com/${{ github.repository }}  /p:BuildInParallel=false /m:1
 
       - name: Validate package version
         run: |
